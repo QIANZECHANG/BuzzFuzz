@@ -202,7 +202,7 @@ int main(int argc, char* argv[])
 
     // src/dst file
     char *src = argv[1];
-    char *dst = "jpeg/output_gray.jpg";
+    char *dst = "/home/binary/BuzzFuzz/program/jpeg/output_gray.jpg";
 
     //decompress input JPEG file
     if (!read_jpeg(&jpegData, src, &jerr)){           
