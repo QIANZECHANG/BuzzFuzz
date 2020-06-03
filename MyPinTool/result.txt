@@ -12,6 +12,9 @@ realloc
 realloc
 .text
 .text
+****************************************
+tracing rtn : jpeg_read_scanlines
+****************************************
 realloc
 brk
 _IO_file_open
