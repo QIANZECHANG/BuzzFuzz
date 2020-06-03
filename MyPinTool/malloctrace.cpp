@@ -5,7 +5,7 @@
 /* ===================================================================== */
 /* ===================================================================== */
 
-#define _rtn "jpeg_create_decompress"
+#define _rtn "jpeg_read_scanlines"
 
 /* ===================================================================== */
 /* Commandline Switches */
@@ -29,16 +29,16 @@ log_syscall(THREADID tid, CONTEXT *ctxt, SYSCALL_STANDARD std, VOID *v){
 /* ===================================================================== */
 /* Instrumentation routines                                              */
 /* ===================================================================== */
-int i=0;
-int sum=0;   
+
 VOID Image(IMG img, VOID *v)
 {    
-    sum++;
     //std::cout<<IMG_Name(img)<<std::endl;
     RTN rtn = RTN_FindByName(img, _rtn);
     if (!RTN_Valid(rtn))return;
-    i++;
-    PIN_AddSyscallEntryFunction(log_syscall,NULL);
+    std::cout<<"****************************************"<<std::endl;
+    std::cout<<"tracing rtn : "<<RTN_Name(rtn)<<std::endl;
+    std::cout<<"****************************************"<<std::endl;
+    // PIN_AddSyscallEntryFunction(log_syscall,NULL);
 }
 /* ===================================================================== */
 /* Instrumentation instructions                                          */                                                
@@ -94,7 +94,7 @@ int main(int argc, char *argv[])
     }
      
     // Instrumentation
-    // IMG_AddInstrumentFunction(Image, NULL);
+    IMG_AddInstrumentFunction(Image, NULL);
     INS_AddInstrumentFunction(Insn,NULL);
     if(ProfileSyscalls.Value()){
         PIN_AddSyscallEntryFunction(log_syscall,0); 
