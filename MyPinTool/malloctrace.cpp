@@ -32,13 +32,11 @@ log_syscall(THREADID tid, CONTEXT *ctxt, SYSCALL_STANDARD std, VOID *v){
 
 VOID Image(IMG img, VOID *v)
 {    
-    //std::cout<<IMG_Name(img)<<std::endl;
     RTN rtn = RTN_FindByName(img, _rtn);
     if (!RTN_Valid(rtn))return;
     std::cout<<"****************************************"<<std::endl;
     std::cout<<"tracing rtn : "<<RTN_Name(rtn)<<std::endl;
     std::cout<<"****************************************"<<std::endl;
-    // PIN_AddSyscallEntryFunction(log_syscall,NULL);
 }
 /* ===================================================================== */
 /* Instrumentation instructions                                          */                                                
