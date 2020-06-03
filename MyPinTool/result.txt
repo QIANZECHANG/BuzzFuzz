@@ -1,0 +1,53 @@
+aaarealloc
+realloc
+realloc
+realloc
+realloc
+realloc
+realloc
+realloc
+realloc
+realloc
+realloc
+realloc
+.text
+.text
+realloc
+brk
+_IO_file_open
+open
+__fxstat
+_IO_file_read
+read
+mmap64
+mmap64
+mmap64
+_IO_file_read
+read
+_IO_file_close
+__fxstat
+_IO_file_open
+open
+brk
+_IO_file_write
+write
+munmap
+Read:  /home/binary/BuzzFuzz/program/jpeg/input.jpg
+Write: /home/binary/BuzzFuzz/program/jpeg/output_gray.jpg
+_Exit
+
+******* SYSCALLS *******
+  0:   8 (13.33%)
+  1:   5 (8.33%)
+  2:   5 (8.33%)
+  3:   5 (8.33%)
+  5:   6 (10.00%)
+  9:  11 (18.33%)
+ 10:   6 (10.00%)
+ 11:   2 (3.33%)
+ 12:   6 (10.00%)
+ 21:   4 (6.67%)
+158:   1 (1.67%)
+231:   1 (1.67%)
+syscall=60
+inssyscall=35
