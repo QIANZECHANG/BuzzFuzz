@@ -97,7 +97,6 @@ int main(int argc, char *argv[])
     // IMG_AddInstrumentFunction(Image, NULL);
     INS_AddInstrumentFunction(Insn,NULL);
     if(ProfileSyscalls.Value()){
-        printf("aaa");
         PIN_AddSyscallEntryFunction(log_syscall,0); 
     }
     PIN_AddFiniFunction(Fini, 0);
