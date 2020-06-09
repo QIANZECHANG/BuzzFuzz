@@ -1,0 +1,11 @@
+Taint Source: 
+    関数: jpeg_read_header(&cinfo, TRUE); 
+    機能: jpegファイルのヘッダを読み込む。width,height,color channelが得られる。
+    syscall: read (syscall number: 0)
+    
+Taint sink  : 
+    1.
+    関数: alloc_jpeg(jpegData);
+    機能: 大きさがsizeof(uint8_t)*width*height*color channelのメモリ領域をmallocする。
+    syscall: brk (syscall number: 12)
+　　　　　　　　
