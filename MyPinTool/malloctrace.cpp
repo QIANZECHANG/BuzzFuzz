@@ -20,19 +20,19 @@ KNOB<bool> ProfileSyscalls(KNOB_MODE_WRITEONCE,"pintool","s","o","Profile syscal
  
 std::map<ADDRINT, unsigned long> syscalls;
 unsigned long syscall_count = 0;
-/*
+
 static void
 log_syscall(THREADID tid, CONTEXT *ctxt, SYSCALL_STANDARD std, VOID *v){
     syscalls[PIN_GetSyscallNumber(ctxt, std)]++;
     std::cout<<PIN_GetSyscallNumber(ctxt, std)<<std::endl;
     syscall_count++;
-}*/
+}
 /*static void
 sl_syscall(THREADID tid, CONTEXT *ctxt, SYSCALL_STANDARD std, VOID *v){
     std::cout<<"sl : "<<PIN_GetSyscallNumber(ctxt, std)<<std::endl;
 }*/
 
-
+/*
 static void
 read_syscall(THREADID tid, CONTEXT *ctxt, SYSCALL_STANDARD std, VOID *v){
     ADDRINT syscall_num=PIN_GetSyscallNumber(ctxt, std);   
@@ -47,7 +47,7 @@ read_syscall(THREADID tid, CONTEXT *ctxt, SYSCALL_STANDARD std, VOID *v){
 
     }
     }
-}
+}*/
 /* ===================================================================== */
 /* Instrumentation routines                                              */
 /* ===================================================================== */
@@ -60,14 +60,14 @@ VOID Rtn(RTN rtn, VOID *v)   //RTN_AddInstrumentFunction(Rtn, NULL);
     c=const_cast<char*>(RTN_Name(rtn).c_str()); //RTN_Name : const string
   
     if(!strcmp(c,"jpeg_read_header"))
-        printf("//////////////////start read header//////////////////\n");
+      //  printf("//////////////////start read header//////////////////\n");
     
     if(!strcmp(c,"alloc_jpeg"))
-        printf("//////////////////start alloc jpeg//////////////////\n");
+      //  printf("//////////////////start alloc jpeg//////////////////\n");
 
 
     if(!strcmp(c,_rtn)){ //#define _rtn "jpeg_read_scanlines"
-        printf("//////////////////start read scanlines//////////////////\n");
+      //  printf("//////////////////start read scanlines//////////////////\n");
         /*if(ProfileSyscalls.Value()){
             PIN_AddSyscallEntryFunction(log_syscall,0);
         }*/
@@ -143,7 +143,7 @@ int main(int argc, char *argv[])
    // RTN_AddInstrumentFunction(Rtn, NULL);
     //INS_AddInstrumentFunction(Insn,NULL);
     if(ProfileSyscalls.Value()){
-        PIN_AddSyscallEntryFunction(read_syscall,0); 
+        PIN_AddSyscallEntryFunction(log_syscall,0); 
     }
     RTN_AddInstrumentFunction(Rtn, NULL);
     //INS_AddInstrumentFunction(Insn,NULL);

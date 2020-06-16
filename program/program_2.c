@@ -89,7 +89,7 @@ bool read_jpeg(JpegData *jpegData,           // JPEG image struct
          printf("wrong file\n");
          return false;
     }
-
+    printf("width : %d\nheight : %d\n",jpegData->width,jpegData->height);
     /////////////////////////////////
     alloc_jpeg(jpegData);                    //allocate memory
     /////////////////////////////////
