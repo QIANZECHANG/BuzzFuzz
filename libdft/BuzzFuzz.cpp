@@ -54,14 +54,15 @@ post_read_hook(syscall_ctx_t *ctx)
 }
 static void
 post_mmap2_hook(syscall_ctx_t *ctx){
+  void *len_addr=&ctx->arg[SYSCALL_ARG1];
   uint8_t color;
 
-  printf("map_len_addr : %p\n",&ctx->arg[SYSCALL_ARG1]);
+  printf("map_len_addr : %p\n",len_addr);
 
-  color = tagmap_getb((uintptr_t)&ctx->arg[SYSCALL_ARG1]);
+  color = tagmap_getb((uintptr_t)len_addr);
 
   if(color){
-    alert((uintptr_t)&ctx->arg[SYSCALL_ARG1],color);
+    alert((uintptr_t)len_addr,color);
   }else{
     return;
   }
