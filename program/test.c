@@ -35,5 +35,6 @@ int main(int argc,char* argv[]){
         } 
     }
     memset(text,'a',10);
+    printf("%s\n",text);
     close(fd);
 }
