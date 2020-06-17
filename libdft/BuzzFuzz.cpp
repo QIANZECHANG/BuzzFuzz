@@ -33,7 +33,7 @@ alert(uintptr_t addr, uint8_t tag)
   exit(1);
 }
 
-/* ------- TAINT SOURCES ------- */
+//jpegファイルの全部のバイトにcolorを付ける
 static void
 post_read_hook(syscall_ctx_t *ctx)
 {
@@ -52,6 +52,13 @@ post_read_hook(syscall_ctx_t *ctx)
 
   tagmap_setn((uintptr_t)buf, len, color); 
 }
+/*
+32bitでmmapがmmap２となる
+
+void *mmap(void *addr, size_t length, int prot, int flags, int fd, off_t offset);
+第二引数（length）を注目する。colorがあるかどうかをcheck
+
+*/
 static void
 post_mmap2_hook(syscall_ctx_t *ctx){
   void *len_addr=&ctx->arg[SYSCALL_ARG1];
