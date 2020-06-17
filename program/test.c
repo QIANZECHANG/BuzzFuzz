@@ -30,7 +30,7 @@ int main(int argc,char* argv[]){
             
             //かけ算を回避するために、widthの一つのバイトを入力するだけ
             text=mmap(NULL,buf[i+8],PROT_READ|PROT_WRITE,MAP_PRIVATE|MAP_ANON,-1,0);
-            //printf("i+7 : %p\ni+8 : %p\n",&buf[i+7],&buf[i+8]);
+            printf("i+7 : %p\ni+8 : %p\n",&buf[i+7],&buf[i+8]);
             break;
         } 
     }
