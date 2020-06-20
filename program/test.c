@@ -14,16 +14,18 @@ int main(int argc,char* argv[]){
     unsigned char buf[4096*5];
     int i;
     char* text;
-    //int width=0;
-    //int height=0;
+    int width=0;
+    int height=0;
+    int size=0;
     int len;
     len=read(fd,buf,4096*5);
     for(i=0;i<len;i++){
         if(buf[i]==0xff&&buf[i+1]==0xc0){ 
-            //height=buf[i+5]*256+buf[i+6];
-            //width=buf[i+7]*256+buf[i+8];
-            text=mmap(NULL,buf[i+8],PROT_READ|PROT_WRITE,MAP_PRIVATE|MAP_ANON,-1,0);
-            printf("i+7 : %p\ni+8 : %p\n",&buf[i+7],&buf[i+8]);
+            height=buf[i+5]*256+buf[i+6];
+            width=buf[i+7]*256+buf[i+8];
+            size=height*width;
+            text=mmap(NULL,size,PROT_READ|PROT_WRITE,MAP_PRIVATE|MAP_ANON,-1,0);
+            //printf("i+7 : %p\ni+8 : %p\n",&buf[i+7],&buf[i+8]);
             break;
         } 
     }
