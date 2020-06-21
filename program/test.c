@@ -25,12 +25,9 @@ int main(int argc,char* argv[]){
             width=buf[i+7]*256+buf[i+8];
             size=height*width;
             text=mmap(NULL,size,PROT_READ|PROT_WRITE,MAP_PRIVATE|MAP_ANON,-1,0);
-            //printf("i+7 : %p\ni+8 : %p\n",&buf[i+7],&buf[i+8]);
             break;
         } 
     }
-
-    //text=mmap(NULL,c,PROT_READ|PROT_WRITE,MAP_SHARED|MAP_ANON,-1,0);
    
     memset(text,'a',10);
     printf("%s\n",text);
