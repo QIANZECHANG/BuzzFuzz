@@ -26,6 +26,7 @@
 extern syscall_desc_t syscall_desc[SYSCALL_MAX];
 extern REG thread_ctx_ptr;
 size_t length;
+std::string mmap2_length("mmap2_length");
 
 typedef struct n{
     ADDRINT addr;
@@ -39,6 +40,22 @@ typedef struct _n{
     struct _n *next;
     struct n *node;
 }node_list;
+
+typedef struct fuzz{
+    ADDRINT addr;
+    struct fuzz *next;
+}fuzz_byte;
+
+typedef struct input{
+    void* buf;
+    size_t len;
+    uint8_t* data;
+    struct input* next;    
+}input_data;
+
+input_data* fuzzed_data_head=NULL;
+
+std::map<std::string,fuzz_byte*> fuzz_data;
 
 node* make_tree(ADDRINT addr,node* left,node* right){
     node* s;
@@ -78,18 +95,36 @@ node* check_node(ADDRINT addr){
     return NULL;
 }
 
-void print_addr(node* node){
+void add_fuzz_byte(ADDRINT addr,fuzz_byte* fuzz){
+    fuzz_byte* s=fuzz;
+    while(s->next!=NULL)s=s->next;
+    s->next=(fuzz_byte*)malloc(sizeof(fuzz_byte));
+    s->next->next=NULL;
+    s->next->addr=addr;
+}
+
+
+void record_addr(node* node,fuzz_byte* fuzz){
     if(node->left==NULL&&node->right==NULL){
-      printf("(print_addr) need to fuzz byte addr 0x%08x\n",node->addr);
+      printf("(record_addr) need to fuzz byte addr 0x%08x\n",node->addr);
+      add_fuzz_byte(node->addr,fuzz);
       return;
     }
-    print_addr(node->left);
-    print_addr(node->right);
+    record_addr(node->left,fuzz);
+    record_addr(node->right,fuzz);
     
 }
 
 node* first=NULL;
 node* second=NULL;
+
+void print_fuzz_addr(fuzz_byte* fuzz){
+    fuzz_byte* s;
+    for(s=fuzz->next;s!=NULL;s=s->next){
+       printf("(print_fuzz_addr) 0x%08x",s->addr);
+    }
+
+}
 
 //jpegファイルの全部のバイトにcolorを付ける
 static void
@@ -107,9 +142,25 @@ post_read_hook(syscall_ctx_t *ctx)
   printf("(BuzzFuzz_read) read: %zu bytes from fd %u\n", len, fd);
   printf("(BuzzFuzz_read) tainting bytes %p -- 0x%x with color 0x%x\n", 
           buf, (uintptr_t)buf+len, color);
-
+  
   tagmap_setn((uintptr_t)buf, len, color); 
   
+  if(fuzzed_data_head==NULL){
+      fuzzed_data_head=(input_data*)malloc(sizeof(input_data));  
+      fuzzed_data_head->next=NULL;
+  } 
+
+  input_data* s=fuzzed_data_head;
+  while(s->next!=NULL)s=s->next;
+  s->next=(input_data*)malloc(sizeof(input_data));
+  s->next->next=NULL;
+  s->next->buf=buf;
+  s->next->len=len;
+  s->next->data=(uint8_t*)malloc(len);
+  size_t i;
+  for(i=0;i<len;i++){
+    *(s->next->data+i)=*(uint8_t*)((uintptr_t)buf+i);
+  } 
 }
 /*
 32bitでmmapがmmap２となる
@@ -118,7 +169,7 @@ void *mmap(void *addr, size_t length, int prot, int flags, int fd, off_t offset)
 第二引数（length）を注目する。colorがあるかどうかをcheck
 
 */
-
+input_data* output;
 static void
 pre_mmap2_hook(syscall_ctx_t *ctx){
   
@@ -126,7 +177,30 @@ pre_mmap2_hook(syscall_ctx_t *ctx){
   
   if(len==length){
     printf("(mmap2) /////////////Tainted!!! length : 0x%x\n",len);
-    print_addr(tree_head);
+
+    fuzz_byte* mmap2_length_head;
+    mmap2_length_head=(fuzz_byte*)malloc(sizeof(fuzz_byte));
+    mmap2_length_head->next=NULL;
+    
+    fuzz_data[mmap2_length]=mmap2_length_head;
+    record_addr(tree_head,mmap2_length_head);
+    
+    input_data* s=fuzzed_data_head;
+    for(s=s->next;s!=NULL;s=s->next){
+        if(mmap2_length_head->next->addr>=(ADDRINT)s->buf&&mmap2_length_head->next->addr<=(ADDRINT)s->buf+len){
+            output=(input_data*)malloc(sizeof(input_data));
+            output->buf=s->buf;
+            output->len=s->len;
+            output->data=s->data;
+
+            fuzz_byte* f;
+            for(f=mmap2_length_head->next;f!=NULL;f=f->next){
+                size_t id=f->addr-(ADDRINT)output->buf;
+                *(output->data+id)=0xff;
+            }
+        } 
+
+    }
     tree_head=NULL;
   }else{
     return;
@@ -249,6 +323,16 @@ dta(INS ins,void* v)
         }
 }
 
+static void
+print_results(INT32 code, void *v){
+    printf("/////////////////////////////\n");
+    print_fuzz_addr(fuzz_data[mmap2_length]); 
+    size_t i;
+    for(i=0;i<output->len;i++){
+        printf("%02x ",output->data[i]);
+    } 
+
+}
 
 int
 main(int argc, char **argv)
@@ -268,6 +352,8 @@ main(int argc, char **argv)
   syscall_set_pre(&syscall_desc[__NR_mmap2], pre_mmap2_hook);
   //ins_set_pre(&ins_desc[XED_ICLASS_MOVZX],dta_eax);
   INS_AddInstrumentFunction(dta,NULL);
+  
+  PIN_AddFiniFunction(print_results,NULL);
  
   PIN_StartProgram();
  
