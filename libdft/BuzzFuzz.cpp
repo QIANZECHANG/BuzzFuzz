@@ -27,8 +27,6 @@ extern syscall_desc_t syscall_desc[SYSCALL_MAX];
 extern REG thread_ctx_ptr;
 size_t length;
 
-std::string mmap2_length("mmap2_length");
-
 //tree : use to trace the tainted addr
 typedef struct n{
     ADDRINT addr;
@@ -56,6 +54,7 @@ typedef struct input{
     struct input* next;    
 }input_data;
 
+std::string mmap2_length("mmap2_length");
 std::map<std::string,fuzz_byte*> fuzz_data; //taint library
 
 node* tree_head=NULL; //keep the head of the tree
@@ -147,8 +146,8 @@ post_read_hook(syscall_ctx_t *ctx)
     return;
   }
 
-  printf("(BuzzFuzz_read) read: %zu bytes from fd %u\n", len, fd);
-  printf("(BuzzFuzz_read) tainting bytes %p -- 0x%x with color 0x%x\n", 
+  printf("(post_read_hook) read: %zu bytes from fd %u\n", len, fd);
+  printf("(post_read_hook) tainting bytes %p -- 0x%x with color 0x%x\n", 
           buf, (uintptr_t)buf+len, color);
   
   tagmap_setn((uintptr_t)buf, len, color); 
@@ -186,7 +185,7 @@ pre_mmap2_hook(syscall_ctx_t *ctx){
   
   //check the second argu (len)
   if(len==length){
-    printf("(mmap2) ///////////// Tainted!!! length : 0x%x(%d)\n",len,len);
+    printf("(pre_mmap2_hook) ///////////// Tainted!!! length : 0x%x(%d)\n",len,len);
 
     //to record the related tainted byte of length
     fuzz_byte* mmap2_length_head;
@@ -271,7 +270,7 @@ check_write_mem(thread_ctx_t *thread_ctx, uint32_t reg,ADDRINT addr)
 }
 
 /*
-check the ins like : push   reg
+check the ins : push   reg
 if the reg has color, use "length" to keep it value
 */
 static ADDRINT PIN_FAST_ANALYSIS_CALL
@@ -315,18 +314,16 @@ dta(INS ins,void* v)
                     IARG_END);
         }
         
-        /*check designated ins
         char* s;       
         s=const_cast<char*>(INS_Mnemonic(ins).c_str());
-        !(strcmp(s,"IMUL"))
-        */
-        if(INS_OperandIsReg(ins,0)){
+       
+        if(!(strcmp(s,"PUSH"))&&INS_OperandIsReg(ins,0)){
                 /*print ins
                 s=const_cast<char*>(INS_Disassemble(ins).c_str());
                 printf("%s\n",s);
                 */
                 reg = INS_OperandReg(ins, 0);
-
+                
                 if(INS_HasFallThrough(ins))
                 INS_InsertCall(ins,
 			IPOINT_AFTER,
